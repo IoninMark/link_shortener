@@ -56,10 +56,12 @@ cover/
 *.pot
 
 # Django stuff:
+logs
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+*.db
 
 # Flask stuff:
 instance/
@@ -163,7 +165,6 @@ dmypy.json
 .pyre/
 
 # pytype static type analyzer
-.pytype/
 
 # Cython debug symbols
 cython_debug/
