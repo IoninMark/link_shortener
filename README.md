@@ -62,8 +62,7 @@ BASE_URL="http://localhost:8000"
 Далее следует выполнить следующие команды для запуска:
 
 ```
-cd app
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 # Основные эндпоинты API

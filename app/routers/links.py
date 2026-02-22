@@ -5,10 +5,10 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
-from crud import LinkCRUD
-from database import get_db
-from logger import api_logger
-from schemas.links import LinkAddSchema, LinkReadSchema
+from app.crud import LinkCRUD
+from app.database import get_db
+from app.logger import api_logger
+from app.schemas.links import LinkAddSchema, LinkReadSchema
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")

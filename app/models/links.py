@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 
 from .constants import MAX_URL_LENGTH, SHORT_URL_LENGTH
-from database import Base
+from app.database import Base
 
 
 class LinkModel(Base):

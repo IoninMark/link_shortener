@@ -5,10 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.links import LinkAddSchema, LinkReadSchema
-from logger import db_logger
-from models.links import LinkModel
-from models.constants import SHORT_URL_LENGTH
+from app.schemas.links import LinkAddSchema, LinkReadSchema
+from app.logger import db_logger
+from app.models.links import LinkModel
+from app.models.constants import SHORT_URL_LENGTH
 
 
 class LinkCRUD:

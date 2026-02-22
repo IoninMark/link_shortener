@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from database import init_db
-from logger import app_logger
-from routers import links
+from app.database import init_db
+from app.logger import app_logger
+from app.routers import links
 
 
 @asynccontextmanager
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Сервис сокращения ссылок",
     description="Простой сервис для создания коротких ссылок.",
-    version="1.0.0",
+    version="1.0.1",
     lifespan=lifespan
 )
 app.include_router(links.router)
