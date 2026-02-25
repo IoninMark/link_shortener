@@ -24,7 +24,11 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post(
+        "/",
+        summary="Создание короткой ссылки",
+        description="Создание короткой ссылки",
+)
 async def create_link(
     request: LinkAddSchema,
     db: AsyncSession = Depends(get_db)
@@ -56,12 +60,21 @@ async def create_link(
         "/{slug}",
         summary="Редирект по короткой ссылке",
         description="Редирект по короткой ссылке",
+        response_class=RedirectResponse,
+        responses={
+            status.HTTP_302_FOUND: {
+                "description": "Успешный редирект на оригинальный URL."
+            },
+            status.HTTP_404_NOT_FOUND: {
+                "description": "Короткая ссылка не найдена."
+            }
+        }
     )
 async def redirect_to_url(
     slug: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Эндпоинт для редиректа по оригинальной ссылке."""
+    """Эндпоинт для редиректа по короткой ссылке."""
     api_logger.debug(
         f"Получен запрос на переход по короткой ссылке: {slug}"
     )
