@@ -36,3 +36,21 @@ class TestLinkCRUD:
         """Тест получения ссылки по несуществующему короткому коду."""
         url = await crud.get_original_link("nonexistent")
         assert url is None
+
+    async def test_get_all_links(
+            self,
+            crud: LinkCRUD,
+            sample_url: str
+    ):
+        """Тест получения информации обо всех ссылках."""
+        # Создаем несколько ссылок для теста
+        for i in range(3):
+            await crud.create_short_link(
+                LinkAddSchema(url=f"{sample_url}/{i}")
+            )
+        links = await crud.get_all_links()
+        assert isinstance(links, list)
+        assert len(links) == 3
+        for link in links:
+            assert str(link.original_url).startswith(sample_url)
+            assert len(link.short_url) == SHORT_URL_LENGTH

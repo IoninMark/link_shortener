@@ -58,3 +58,23 @@ class TestAPI:
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json() == {"detail": "Ссылка не найдена."}
+
+    async def test_get_all_links_response(self, client: AsyncClient):
+        """Тестирование получения информации обо всех ссылках."""
+        # Создаем несколько ссылок для теста
+        for i in range(3):
+            await client.post(
+                "/links/",
+                json={"url": f"https://www.example.com/all-links-test/{i}"}
+            )
+        response = await client.get("/links/")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 3
+        for link in data:
+            assert "short_url" in link
+            assert "original_url" in link
+            assert str(link["original_url"]).startswith(
+                "https://www.example.com/all-links-test/"
+            )

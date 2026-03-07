@@ -57,14 +57,17 @@ async def test_engine():
 @pytest.fixture
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """Создание и закрытие сессии базы данных для каждого теста."""
+    connection = await test_engine.connect()
+    transaction = await connection.begin()
     async_session = async_sessionmaker(
-        test_engine,
+        connection,
         class_=AsyncSession,
         expire_on_commit=False
     )
     async with async_session() as session:
         yield session
-        await session.rollback()  # Откат изменений после каждого теста
+        await transaction.rollback()  # Откат изменений после каждого теста
+        await connection.close()
 
 
 @pytest.fixture
