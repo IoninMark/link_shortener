@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -7,14 +8,15 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
+load_dotenv()  # Загружаем переменные окружения из .env файла
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "sqlite+aiosqlite:///./links.db"
 )
-
 # 1. Создаем асинхронный движок (Async Engine)
 engine = create_async_engine(
     DATABASE_URL,
+    echo=True,
     connect_args={"check_same_thread": False}
 )
 

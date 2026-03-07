@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Сервис сокращения ссылок",
     description="Простой сервис для создания коротких ссылок.",
-    version="1.0.1",
+    version="1.0.2",
     lifespan=lifespan
 )
 app.include_router(links.router)

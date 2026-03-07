@@ -1,11 +1,11 @@
 import random
 import string
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.links import LinkAddSchema, LinkReadSchema
+from app.schemas.links import LinkAddSchema, LinkInfoSchema, LinkReadSchema
 from app.logger import db_logger
 from app.models.links import LinkModel
 from app.models.constants import SHORT_URL_LENGTH
@@ -70,6 +70,13 @@ class LinkCRUD:
         )
         link = result.scalar_one_or_none()
         if link:
+            # Увеличиваем счетчик переходов по ссылке
+            await self.db.execute(
+                update(LinkModel).where(
+                    LinkModel.short_url == short_code
+                ).values(clicks=LinkModel.clicks + 1)
+            )
+            await self.db.commit()
             db_logger.info(
                 f"Оригинальная ссылка найдена для кода {short_code}: "
                 f"{link.original_url}"
@@ -79,3 +86,33 @@ class LinkCRUD:
             f"Оригинальная ссылка не найдена для кода: {short_code}"
         )
         return None
+
+    async def get_link_info(self, short_code: str) -> LinkInfoSchema | None:
+        """Получение информации о ссылке по короткому коду."""
+        db_logger.debug(
+            f"Получение информации о ссылке для короткого кода: {short_code}"
+        )
+        result = await self.db.execute(
+            select(LinkModel).where(LinkModel.short_url == short_code)
+        )
+        link = result.scalar_one_or_none()
+        if link:
+            db_logger.info(
+                f"Информация о ссылке найдена для кода {short_code}: "
+                f"{link.original_url}"
+            )
+            return LinkInfoSchema.model_validate(link)
+        db_logger.warning(
+            f"Информация о ссылке не найдена для кода: {short_code}"
+        )
+        return None
+
+    async def get_all_links(self) -> list[LinkInfoSchema]:
+        """Получение информации обо всех ссылках."""
+        db_logger.debug("Получение информации обо всех ссылках...")
+        result = await self.db.execute(
+            select(LinkModel).order_by(LinkModel.created_at.desc())
+        )
+        links = result.scalars().all()
+        db_logger.info(f"Найдено {len(links)} ссылок в базе данных.")
+        return [LinkInfoSchema.model_validate(link) for link in links]

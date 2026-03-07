@@ -8,7 +8,7 @@ from fastapi import Depends
 from app.crud import LinkCRUD
 from app.database import get_db
 from app.logger import api_logger
-from app.schemas.links import LinkAddSchema, LinkReadSchema
+from app.schemas.links import LinkAddSchema, LinkInfoSchema, LinkReadSchema
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
@@ -44,10 +44,7 @@ async def create_link(
             f"Создана короткая ссылка: {short_code.short_url} "
             f"-> {short_code.original_url}"
         )
-        return LinkReadSchema(
-            short_url=f"{BASE_URL}/{short_code.short_url}",
-            original_url=short_code.original_url
-        )
+        return short_code
     except ValueError as e:
         api_logger.error(f"Ошибка при создании короткой ссылки: {str(e)}")
         raise HTTPException(
@@ -95,3 +92,58 @@ async def redirect_to_url(
         url=original_url,
         status_code=status.HTTP_302_FOUND
     )
+
+
+@router.get(
+        "/{slug}/info",
+        summary="Получение информации о ссылке",
+        description="Получение информации о ссылке",
+        response_model=LinkInfoSchema,
+        responses={
+            status.HTTP_404_NOT_FOUND: {
+                "description": "Короткая ссылка не найдена."
+            }
+        }
+    )
+async def get_link_info(
+    slug: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Эндпоинт для получения информации о ссылке."""
+    api_logger.debug(
+        f"Получен запрос на получение информации о короткой ссылке: {slug}"
+    )
+    crud = LinkCRUD(db)
+    link_info = await crud.get_link_info(slug)
+    if not link_info:
+        api_logger.warning(
+            f"Короткая ссылка не найдена для получения информации: {slug}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ссылка не найдена."
+        )
+    api_logger.info(
+        f"Информация о ссылке получена для кода {slug}: "
+        f"{link_info.original_url}, кликов: {link_info.clicks}"
+    )
+    return link_info
+
+
+@router.get(
+        "/",
+        summary="Получение информации обо всех ссылках",
+        description="Получение информации обо всех ссылках",
+        response_model=list[LinkInfoSchema]
+    )
+async def get_all_links(
+    db: AsyncSession = Depends(get_db)
+):
+    """Эндпоинт для получения информации обо всех ссылках."""
+    api_logger.debug("Получен запрос на получение информации обо всех ссылках.")
+    crud = LinkCRUD(db)
+    links = await crud.get_all_links()
+    api_logger.info(
+        f"Информация обо всех ссылках получена. Количество: {len(links)}"
+    )
+    return links

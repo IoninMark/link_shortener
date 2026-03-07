@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 
-log_dir = Path("logs")
+log_dir = Path("app/logs")
 log_dir.mkdir(exist_ok=True)
 
 LOG_FORMAT = (
