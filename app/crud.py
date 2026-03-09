@@ -5,7 +5,12 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.links import LinkAddSchema, LinkInfoSchema, LinkReadSchema
+from app.schemas.links import (
+    LinkAddSchema,
+    LinkInfoSchema,
+    LinkReadSchema,
+    PaginationParams
+)
 from app.logger import db_logger
 from app.models.links import LinkModel
 from app.models.constants import SHORT_URL_LENGTH
@@ -28,7 +33,7 @@ class LinkCRUD:
                 select(LinkModel).where(LinkModel.short_url == code)
             )
             if not result.scalar_one_or_none():
-                db_logger.debug(f"Сгенерирован уникальный короткий код: {code}")
+                db_logger.debug(f"Сгенерирован короткий код: {code}")
                 return code
 
     async def create_short_link(
@@ -81,7 +86,7 @@ class LinkCRUD:
                 f"Оригинальная ссылка найдена для кода {short_code}: "
                 f"{link.original_url}"
             )
-            return link.original_url
+            return str(link.original_url)
         db_logger.warning(
             f"Оригинальная ссылка не найдена для кода: {short_code}"
         )
@@ -107,11 +112,16 @@ class LinkCRUD:
         )
         return None
 
-    async def get_all_links(self) -> list[LinkInfoSchema]:
+    async def get_all_links(
+            self,
+            pagination: PaginationParams) -> list[LinkInfoSchema]:
         """Получение информации обо всех ссылках."""
         db_logger.debug("Получение информации обо всех ссылках...")
         result = await self.db.execute(
-            select(LinkModel).order_by(LinkModel.created_at.desc())
+            select(LinkModel)
+            .order_by(LinkModel.created_at.desc())
+            .limit(pagination.limit)
+            .offset(pagination.offset)
         )
         links = result.scalars().all()
         db_logger.info(f"Найдено {len(links)} ссылок в базе данных.")

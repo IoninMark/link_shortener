@@ -1,6 +1,6 @@
 from app.crud import LinkCRUD
 from app.models.constants import SHORT_URL_LENGTH
-from app.schemas.links import LinkAddSchema
+from app.schemas.links import LinkAddSchema, PaginationParams
 
 
 class TestLinkCRUD:
@@ -48,7 +48,9 @@ class TestLinkCRUD:
             await crud.create_short_link(
                 LinkAddSchema(url=f"{sample_url}/{i}")
             )
-        links = await crud.get_all_links()
+        links = await crud.get_all_links(
+            pagination=PaginationParams(limit=10, offset=0)
+        )
         assert isinstance(links, list)
         assert len(links) == 3
         for link in links:

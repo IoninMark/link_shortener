@@ -41,3 +41,18 @@ class LinkInfoSchema(BaseModel):
     )
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaginationParams(BaseModel):
+    """Схема для пагинации при получении списка ссылок."""
+    limit: int = Field(
+        10,
+        ge=1,
+        le=100,
+        description="Количество элементов на странице (от 1 до 100)."
+    )
+    offset: int = Field(
+        0,
+        ge=0,
+        description="Смещение (количество элементов для пропуска)."
+    )

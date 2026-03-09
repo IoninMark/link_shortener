@@ -1,4 +1,5 @@
 import os
+from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import RedirectResponse
@@ -8,7 +9,12 @@ from fastapi import Depends
 from app.crud import LinkCRUD
 from app.database import get_db
 from app.logger import api_logger
-from app.schemas.links import LinkAddSchema, LinkInfoSchema, LinkReadSchema
+from app.schemas.links import (
+    LinkAddSchema,
+    LinkInfoSchema,
+    LinkReadSchema,
+    PaginationParams
+)
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
@@ -22,6 +28,8 @@ router = APIRouter(
     prefix="/links",
     tags=["Ссылки"]
 )
+
+PaginationDep = Annotated[PaginationParams, Depends(PaginationParams)]
 
 
 @router.post(
@@ -137,12 +145,13 @@ async def get_link_info(
         response_model=list[LinkInfoSchema]
     )
 async def get_all_links(
-    db: AsyncSession = Depends(get_db)
+    pagination: PaginationDep,
+    db: AsyncSession = Depends(get_db),
 ):
     """Эндпоинт для получения информации обо всех ссылках."""
-    api_logger.debug("Получен запрос на получение информации обо всех ссылках.")
+    api_logger.debug("Получен запрос на получение всех ссылок.")
     crud = LinkCRUD(db)
-    links = await crud.get_all_links()
+    links = await crud.get_all_links(pagination=pagination)
     api_logger.info(
         f"Информация обо всех ссылках получена. Количество: {len(links)}"
     )
