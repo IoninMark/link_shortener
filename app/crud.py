@@ -37,13 +37,31 @@ class LinkCRUD:
                 return code
 
     async def create_short_link(
-            self, original_url: LinkAddSchema
+            self, original_url: LinkAddSchema,
     ) -> LinkReadSchema:
         """Создание короткой ссылки."""
         db_logger.debug(
             f"Создание короткой ссылки для URL: {original_url.url}"
         )
-        short_code = await self.generate_short_code()
+        if original_url.custom_code:
+            db_logger.debug(
+                f"Пользовательский короткий код: {original_url.custom_code}"
+            )
+            result = await self.db.execute(
+                select(LinkModel)
+                .where(LinkModel.short_url == original_url.custom_code)
+            )
+            if result.scalar_one_or_none():
+                db_logger.error(
+                    f"Пользовательский короткий код уже существует: "
+                    f"{original_url.custom_code}"
+                )
+                raise ValueError(
+                    "Пользовательский короткий код уже существует."
+                )
+            short_code = original_url.custom_code
+        else:
+            short_code = await self.generate_short_code()
         new_link = LinkModel(
             short_url=short_code,
             original_url=str(original_url.url)

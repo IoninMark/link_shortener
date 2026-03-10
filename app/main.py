@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Сервис сокращения ссылок",
     description="Простой сервис для создания коротких ссылок.",
-    version="1.0.2",
+    version="1.0.3",
     lifespan=lifespan
 )
 app.include_router(links.router)
@@ -32,4 +32,6 @@ app.include_router(links.router)
 def root():
     """Приветственный эндпоинт для проверки работоспособности приложения."""
     app_logger.debug("Получен запрос на корневой эндпоинт.")
-    return {"message": "Приложение работает!"}
+    return {"message": "Приложение работает!",
+            "version": app.version,
+            "endpoints": [route.path for route in app.routes]}

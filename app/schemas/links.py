@@ -2,11 +2,21 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
+from app.models.constants import SHORT_URL_LENGTH
+
 
 class LinkAddSchema(BaseModel):
     """Схема запроса создания новой ссылки."""
     url: HttpUrl = Field(
         description="Оригинальная URL-ссылка для сокращения."
+    )
+    custom_code: str | None = Field(
+        None,
+        min_length=SHORT_URL_LENGTH,
+        max_length=SHORT_URL_LENGTH,
+        pattern=f"^[a-zA-Z0-9]{{{SHORT_URL_LENGTH}}}$",
+        description="Пользовательский короткий код (необязательно). "
+                    "Если не указан, будет сгенерирован автоматически."
     )
 
     model_config = ConfigDict(from_attributes=True)

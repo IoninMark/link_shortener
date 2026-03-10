@@ -18,6 +18,40 @@ class TestLinkCRUD:
         assert len(short_link.short_url) == SHORT_URL_LENGTH
         assert str(short_link.original_url) == sample_url
 
+    async def test_create_short_link_with_custom_code(
+            self,
+            crud: LinkCRUD,
+            sample_url: str
+    ):
+        """Тест создания новой ссылки с пользовательским коротким кодом."""
+        custom_code = "custom"
+        sample_schema = LinkAddSchema(url=sample_url, custom_code=custom_code)
+        short_link = await crud.create_short_link(sample_schema)
+        assert short_link is not None
+        assert short_link.short_url == custom_code
+        assert str(short_link.original_url) == sample_url
+
+    async def test_create_short_link_with_existing_custom_code(
+            self,
+            crud: LinkCRUD,
+            sample_url: str,
+            another_sample_url: str
+    ):
+        """Тест создания новой ссылки с уже существующим коротким кодом."""
+        custom_code = "custom"
+        sample_schema_1 = LinkAddSchema(
+            url=sample_url, custom_code=custom_code
+        )
+        await crud.create_short_link(sample_schema_1)
+        sample_schema_2 = LinkAddSchema(
+            url=another_sample_url, custom_code=custom_code
+        )
+        try:
+            await crud.create_short_link(sample_schema_2)
+            assert False, "Ожидалось ValueError при дублировании кода."
+        except ValueError as e:
+            assert str(e) == "Пользовательский короткий код уже существует."
+
     async def test_get_original_url(
             self,
             crud: LinkCRUD,

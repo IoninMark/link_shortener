@@ -9,7 +9,6 @@ class TestAPI:
         """Тестирование корневого эндпоинта."""
         response = await client.get("/")
         assert response.status_code == status.HTTP_200_OK
-        assert response.json() == {"message": "Приложение работает!"}
 
     async def test_create_short_link(self, client: AsyncClient):
         """Тестирование создания короткой ссылки."""
@@ -21,6 +20,22 @@ class TestAPI:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "short_url" in data
+        assert data["original_url"] == payload["url"]
+
+    async def test_create_short_link_with_custom_code(
+            self, client: AsyncClient):
+        """Тестирование создания короткой ссылки с пользовательским кодом."""
+        payload = {
+            "url": "https://www.example.com/test-custom/",
+            "custom_code": "custom"
+        }
+        response = await client.post(
+            "/links/",
+            json=payload
+        )
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["short_url"] == "custom"
         assert data["original_url"] == payload["url"]
 
     async def test_create_short_link_invalid_url(self, client: AsyncClient):

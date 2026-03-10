@@ -105,3 +105,9 @@ async def crud(db_session: AsyncSession) -> LinkCRUD:
 def sample_url() -> str:
     """Пример URL для тестов."""
     return "https://www.example.com/"
+
+
+@pytest.fixture
+def another_sample_url() -> str:
+    """Пример URL для тестов."""
+    return "https://www.example.com/another"
